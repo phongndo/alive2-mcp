@@ -20,6 +20,13 @@ source_for() {
   printf '      url "%s/%s"\n      sha256 "%s"\n' "$base" "$asset" "$sum"
 }
 
+# Assigned first: under set -e a failed lookup stops the script here, which it
+# wouldn't inside the heredoc.
+mac_arm=$(source_for darwin_arm64)
+mac_intel=$(source_for darwin_amd64)
+linux_arm=$(source_for linux_arm64)
+linux_intel=$(source_for linux_amd64)
+
 cat <<EOF
 class Alive2Mcp < Formula
   desc "MCP server and CLI for checking LLVM IR transformations with Alive2"
@@ -29,21 +36,21 @@ class Alive2Mcp < Formula
 
   on_macos do
     on_arm do
-$(source_for darwin_arm64)
+$mac_arm
     end
 
     on_intel do
-$(source_for darwin_amd64)
+$mac_intel
     end
   end
 
   on_linux do
     on_arm do
-$(source_for linux_arm64)
+$linux_arm
     end
 
     on_intel do
-$(source_for linux_amd64)
+$linux_intel
     end
   end
 
