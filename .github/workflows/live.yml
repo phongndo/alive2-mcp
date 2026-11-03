@@ -1,0 +1,30 @@
+name: Live
+
+# Unit tests use a fake server. This checks the real alive2.llvm.org API still
+# behaves the same, since that is what breaks this tool if it ever changes.
+on:
+  schedule:
+    - cron: "17 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  alive2-llvm-org:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: cachix/install-nix-action@13d8dd58da0234aa297dedd986986ccb8e7f3e24 # v31
+      - name: Build
+        run: nix build -L
+      - name: A pair that must be refuted
+        run: |
+          set +e
+          ./result/bin/alive2-mcp verify internal/alive/testdata/pair-src.ll internal/alive/testdata/pair-tgt.ll
+          test $? -eq 1
+      - name: Upstream passes that must verify
+        run: ./result/bin/alive2-mcp verify -opt upstream -passes instcombine internal/alive/testdata/passes.ll
