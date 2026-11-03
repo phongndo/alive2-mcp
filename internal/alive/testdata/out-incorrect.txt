@@ -1,0 +1,75 @@
+
+----------------------------------------
+define i64 @test(i1 %c, i64 %idx) {
+entry:
+  br i1 %c, label %pA, label %pB
+
+pB:
+  br label %join
+
+pA:
+  br label %join
+
+join:
+  %g = gep ptr null, 1 x i64 %idx
+  %r = ptrtoint ptr %g to i64
+  ret i64 %r
+}
+=>
+define i64 @test(i1 %c, i64 %idx) {
+entry:
+  br i1 %c, label %pA, label %pB
+
+pB:
+  %gb = gep inbounds ptr null, 1 x i64 %idx
+  %.pre = ptrtoint ptr %gb to i64
+  br label %join
+
+pA:
+  %ga = gep ptr null, 1 x i64 %idx
+  %ra = ptrtoint ptr %ga to i64
+  br label %join
+
+join:
+  %r.pre-phi = phi i64 [ %.pre, %pB ], [ %ra, %pA ]
+  ret i64 %r.pre-phi
+}
+Transformation doesn't verify!
+
+ERROR: Target is more poisonous than source
+
+Example:
+i1 %c = #x0 (0)
+i64 %idx = #x0000000000000001 (1)
+
+Source:
+  >> Jump to %pB
+  >> Jump to %join
+ptr %g = pointer(non-local, block_id=0, offset=1) / Address=#x0000000000000001
+i64 %r = #x0000000000000001 (1)
+
+SOURCE MEMORY STATE
+===================
+NON-LOCAL BLOCKS:
+Block 0 >	size: 0	align: 1	alloc type: 0	alive: false	address: #x0000000000000000
+
+Target:
+  >> Jump to %pB
+ptr %gb = poison
+i64 %.pre = poison
+  >> Jump to %join
+i64 %r.pre-phi = poison
+
+TARGET MEMORY STATE
+===================
+NON-LOCAL BLOCKS:
+Block 0 >	size: 0	align: 1	alloc type: 0	alive: false	address: #x0000000000000000
+Source value: #x0000000000000001 (1)
+Target value: poison
+
+Summary:
+  0 correct transformations
+  1 incorrect transformations
+  0 failed-to-prove transformations
+  0 Alive2 errors
+

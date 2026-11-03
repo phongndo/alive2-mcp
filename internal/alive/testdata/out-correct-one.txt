@@ -1,0 +1,16 @@
+
+----------------------------------------
+define i8 @src(i8 %x) {
+#0:
+  %a = add nuw i8 %x, 1
+  ret i8 %a
+}
+=>
+define i8 @tgt(i8 %x) {
+#0:
+  %a = add i8 %x, 1
+  ret i8 %a
+}
+Transformation seems to be correct!
+
+

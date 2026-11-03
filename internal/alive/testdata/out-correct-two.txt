@@ -1,0 +1,35 @@
+
+----------------------------------------
+define i8 @f(i8 %x) {
+#0:
+  %a = add i8 %x, 0
+  ret i8 %a
+}
+=>
+define i8 @f(i8 %x) {
+#0:
+  ret i8 %x
+}
+Transformation seems to be correct!
+
+
+----------------------------------------
+define i8 @g(i8 %x) {
+#0:
+  %a = mul i8 %x, 2
+  ret i8 %a
+}
+=>
+define i8 @g(i8 %x) {
+#0:
+  %a = shl i8 %x, 1
+  ret i8 %a
+}
+Transformation seems to be correct!
+
+Summary:
+  2 correct transformations
+  0 incorrect transformations
+  0 failed-to-prove transformations
+  0 Alive2 errors
+
