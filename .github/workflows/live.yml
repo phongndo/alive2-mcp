@@ -21,6 +21,14 @@ jobs:
       - uses: cachix/install-nix-action@13d8dd58da0234aa297dedd986986ccb8e7f3e24 # v31
       - name: Build
         run: nix build -L
+      # Tells a network problem apart from an API change when the checks fail.
+      - name: Reach alive2.llvm.org
+        run: |
+          getent ahosts alive2.llvm.org || true
+          for ip in -4 -6; do
+            curl "$ip" -sS -o /dev/null -w "curl $ip: %{http_code} %{remote_ip} %{time_total}s\n" \
+              --max-time 30 -H 'Accept: application/json' https://alive2.llvm.org/ce/api/compilers/llvm || true
+          done
       - name: A pair that must be refuted
         run: |
           set +e
