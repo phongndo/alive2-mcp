@@ -23,7 +23,7 @@ type FunctionResult struct {
 
 var (
 	separator = strings.Repeat("-", 40)
-	unknownRE = regexp.MustCompile(`[Tt]imeout|failed-to-prove|Couldn't prove|approximat`)
+	unknownRE = regexp.MustCompile(`[Tt]imeout|timed out|failed-to-prove|Couldn't prove|approximat`)
 	headerRE  = regexp.MustCompile(`define[^\n]*?` + fnName)
 )
 

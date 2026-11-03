@@ -29,6 +29,7 @@ func TestParseRealOutputs(t *testing.T) {
 		{"out-mismatch.txt", "", []string{Incorrect}, []string{"src"}, Incorrect, "Value mismatch"},
 		{"out-correct-one.txt", "f", []string{Correct}, []string{"f"}, Correct, ""},
 		{"out-error.txt", "f", []string{Error}, []string{"f"}, Error, "Compilation failed"},
+		{"out-timeout.txt", "f", []string{Unknown}, []string{"f"}, Unknown, "timed out"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.file, func(t *testing.T) {

@@ -1,0 +1,14 @@
+Alive2 timed out while processing your query.
+There are a few things you can try:
+
+- remove extraneous instructions, if any
+
+- reduce variable widths, for example to i16, i8, or i4
+
+- add the --disable-undef-input command line flag, which
+  allows Alive2 to assume that arguments to your IR are not
+  undef. This is, in general, unsound: it can cause Alive2
+  to miss bugs.
+
+
+Killed - processing time exceeded
