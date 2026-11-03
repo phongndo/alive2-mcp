@@ -1,0 +1,21 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.phongndo/alive2-mcp",
+  "title": "Alive2",
+  "description": "Prove or refute LLVM IR transformations with Alive2, and read or create alive2.llvm.org links",
+  "version": "0.0.0",
+  "websiteUrl": "https://github.com/phongndo/alive2-mcp",
+  "repository": {
+    "url": "https://github.com/phongndo/alive2-mcp",
+    "source": "github"
+  },
+  "packages": [
+    {
+      "registryType": "oci",
+      "identifier": "ghcr.io/phongndo/alive2-mcp:0.0.0",
+      "transport": {
+        "type": "stdio"
+      }
+    }
+  ]
+}

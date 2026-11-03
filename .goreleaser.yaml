@@ -1,0 +1,58 @@
+version: 2
+
+# Releases are cut by pushing a v* tag; see .github/workflows/release.yml.
+project_name: alive2-mcp
+
+builds:
+  - env:
+      - CGO_ENABLED=0
+    goos: [linux, darwin, windows]
+    goarch: [amd64, arm64]
+    flags: [-trimpath]
+    ldflags:
+      - -s -w -X main.version={{ .Version }}
+    mod_timestamp: "{{ .CommitTimestamp }}"
+
+archives:
+  - formats: [tar.gz]
+    format_overrides:
+      - goos: windows
+        formats: [zip]
+    files: [README.md, LICENSE]
+
+checksum:
+  name_template: checksums.txt
+
+dockers_v2:
+  - images: [ghcr.io/phongndo/alive2-mcp]
+    tags: ["{{ .Version }}", latest]
+    platforms: [linux/amd64, linux/arm64]
+    labels:
+      org.opencontainers.image.source: https://github.com/phongndo/alive2-mcp
+      org.opencontainers.image.version: "{{ .Version }}"
+      org.opencontainers.image.revision: "{{ .FullCommit }}"
+      org.opencontainers.image.licenses: MIT
+      org.opencontainers.image.description: MCP server and CLI for checking LLVM IR transformations with Alive2
+
+changelog:
+  use: github
+  filters:
+    exclude: ["^Merge "]
+
+release:
+  # The workflow attaches the Homebrew formula, then publishes the draft.
+  draft: true
+  replace_existing_draft: true
+  footer: |
+    ## Install
+
+    ```sh
+    brew install phongndo/tap/alive2-mcp
+    mise use -g github:phongndo/alive2-mcp
+    go install github.com/phongndo/alive2-mcp@{{ .Tag }}
+    nix profile add github:phongndo/alive2-mcp/{{ .Tag }}
+    docker pull ghcr.io/phongndo/alive2-mcp:{{ .Version }}
+    ```
+
+    Or download an archive below; `checksums.txt` lists their SHA-256 sums, and
+    `gh attestation verify <archive> --repo phongndo/alive2-mcp` checks where they were built.

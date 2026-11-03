@@ -18,6 +18,7 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
+	"runtime/debug"
 	"strings"
 	"time"
 
@@ -26,7 +27,14 @@ import (
 	"github.com/phongndo/alive2-mcp/internal/alive"
 )
 
+// version is set by release builds; go install builds report their module version.
 var version = "dev"
+
+func init() {
+	if info, ok := debug.ReadBuildInfo(); ok && version == "dev" && info.Main.Version != "" && info.Main.Version != "(devel)" {
+		version = strings.TrimPrefix(info.Main.Version, "v")
+	}
+}
 
 const instructions = `Alive2 proves or refutes that an LLVM IR transformation is correct (tgt refines src).
 To check your own compiler change, give passes with opt set to your patched opt binary;
