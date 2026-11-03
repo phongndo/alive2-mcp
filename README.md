@@ -127,7 +127,7 @@ nix flake check      # build, tests, golangci-lint, formatting
 CI runs `nix flake check` on Linux (x86-64 and ARM) and macOS. A weekly job checks the
 live alive2.llvm.org API, since a change there is what would break this tool.
 
-To release, push a `vX.Y.Z` tag on `main`. The Release workflow builds the archives and
+To release, set `VERSION` and push a matching `vX.Y.Z` tag on `main`. The Release workflow builds the archives and
 images with GoReleaser, attests them, publishes the release with its Homebrew formula
 (which [phongndo/homebrew-tap](https://github.com/phongndo/homebrew-tap) picks up), and
 lists the version in the MCP Registry. CI runs the same build as a dry run on every push.

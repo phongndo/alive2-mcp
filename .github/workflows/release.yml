@@ -36,8 +36,10 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
-      - name: The tag must be on main
-        run: git merge-base --is-ancestor "$GITHUB_SHA" origin/main
+      - name: The tag must be on main and match VERSION
+        run: |
+          git merge-base --is-ancestor "$GITHUB_SHA" origin/main
+          test "$TAG" = "v$(cat VERSION)" || { echo "::error::$TAG does not match VERSION ($(cat VERSION))"; exit 1; }
       - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version-file: go.mod

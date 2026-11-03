@@ -15,7 +15,9 @@
         "aarch64-darwin"
       ];
       forAllSystems = f: lib.genAttrs systems (system: f nixpkgs.legacyPackages.${system});
-      version = self.shortRev or self.dirtyShortRev or "dev";
+      # Releases tag the commit that sets VERSION, so Nix builds of a release
+      # report it the way the release binaries do.
+      version = lib.fileContents ./VERSION;
     in
     {
       overlays.default = final: _: {
