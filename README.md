@@ -86,6 +86,9 @@ function they share is merged into one module, renamed, and checked concurrently
 target's attribute groups and metadata are renumbered so they can't collide with the
 source's. A local `alive-tv` gets both files and pairs functions itself.
 
+Dropped connections, DNS timeouts and gateway errors are retried twice with a short
+backoff. Other HTTP errors are reported at once.
+
 ## Limits
 
 Alive2 is bounded and intraprocedural. Loops are unrolled a few times and calls to

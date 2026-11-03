@@ -41,38 +41,71 @@ func NewClient(web, aliveTV, opt string) *Client {
 	}
 }
 
+// attempts and backoff bound retries of transient failures: dropped
+// connections, DNS timeouts and gateway errors. Every endpoint used is safe to
+// repeat; the shortener dedupes identical sessions.
+const attempts = 3
+
+var backoff = time.Second
+
 func (c *Client) call(ctx context.Context, method, path string, body, out any) error {
-	var r io.Reader
+	var payload []byte
 	if body != nil {
-		b, err := json.Marshal(body)
-		if err != nil {
+		var err error
+		if payload, err = json.Marshal(body); err != nil {
 			return err
 		}
-		r = bytes.NewReader(b)
+	}
+	var err error
+	for try := range attempts {
+		if try > 0 {
+			select {
+			case <-ctx.Done():
+				return ctx.Err()
+			case <-time.After(backoff << (try - 1)):
+			}
+		}
+		var retry bool
+		if retry, err = c.once(ctx, method, path, payload, out); !retry {
+			return err
+		}
+	}
+	return fmt.Errorf("after %d attempts: %w", attempts, err)
+}
+
+// once makes one request and reports whether a failure is worth retrying.
+func (c *Client) once(ctx context.Context, method, path string, payload []byte, out any) (bool, error) {
+	var r io.Reader
+	if payload != nil {
+		r = bytes.NewReader(payload)
 	}
 	req, err := http.NewRequestWithContext(ctx, method, c.Web+path, r)
 	if err != nil {
-		return err
+		return false, err
 	}
 	req.Header.Set("Accept", "application/json")
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("User-Agent", "alive2-mcp")
 	resp, err := c.HTTP.Do(req)
 	if err != nil {
-		return err
+		return ctx.Err() == nil, err
 	}
 	defer func() { _ = resp.Body.Close() }()
 	data, err := io.ReadAll(io.LimitReader(resp.Body, 32<<20))
 	if err != nil {
-		return err
+		return true, err
 	}
-	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("%s %s: HTTP %d: %.300s", method, path, resp.StatusCode, data)
+	switch resp.StatusCode {
+	case http.StatusOK:
+	case http.StatusBadGateway, http.StatusServiceUnavailable, http.StatusGatewayTimeout:
+		return true, fmt.Errorf("%s %s: HTTP %d", method, path, resp.StatusCode)
+	default:
+		return false, fmt.Errorf("%s %s: HTTP %d: %.300s", method, path, resp.StatusCode, data)
 	}
 	if err := json.Unmarshal(data, out); err != nil {
-		return fmt.Errorf("%s %s: decoding response: %w", method, path, err)
+		return false, fmt.Errorf("%s %s: decoding response: %w", method, path, err)
 	}
-	return nil
+	return false, nil
 }
 
 type textLines []struct {
