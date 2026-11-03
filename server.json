@@ -7,7 +7,8 @@
   "websiteUrl": "https://github.com/phongndo/alive2-mcp",
   "repository": {
     "url": "https://github.com/phongndo/alive2-mcp",
-    "source": "github"
+    "source": "github",
+    "id": "1443959098"
   },
   "packages": [
     {
