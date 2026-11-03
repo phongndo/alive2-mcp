@@ -23,11 +23,18 @@ don't have to paste large modules. Results are returned as structured content.
 
 ## Install
 
-```sh
-nix profile install github:phongndo/alive2-mcp
-# or
-go install github.com/phongndo/alive2-mcp@latest
-```
+| With | Run |
+| --- | --- |
+| Homebrew (macOS, Linux) | `brew install phongndo/tap/alive2-mcp` |
+| mise | `mise use -g github:phongndo/alive2-mcp` |
+| Go | `go install github.com/phongndo/alive2-mcp@latest` |
+| Nix | `nix profile add github:phongndo/alive2-mcp` |
+| Docker | `docker pull ghcr.io/phongndo/alive2-mcp` |
+| Download | archives for Linux, macOS and Windows on the [releases page](https://github.com/phongndo/alive2-mcp/releases) |
+
+It's also listed in the [MCP Registry](https://registry.modelcontextprotocol.io) as
+`io.github.phongndo/alive2-mcp`. Release archives carry build provenance; verify one
+with `gh attestation verify <archive> --repo phongndo/alive2-mcp`.
 
 ## Use
 
@@ -51,6 +58,19 @@ or in a project's `.mcp.json`:
 
 ```sh
 codex mcp add alive2 -- alive2-mcp -opt /path/to/build/bin/opt
+```
+
+### Without installing
+
+The image runs the server over stdio. It can't see your files or your `opt`, so pass
+IR as text and use `opt: "upstream"`:
+
+```json
+{
+  "mcpServers": {
+    "alive2": { "command": "docker", "args": ["run", "-i", "--rm", "ghcr.io/phongndo/alive2-mcp"] }
+  }
+}
 ```
 
 ### Flags
@@ -106,6 +126,11 @@ nix flake check      # build, tests, golangci-lint, formatting
 
 CI runs `nix flake check` on Linux (x86-64 and ARM) and macOS. A weekly job checks the
 live alive2.llvm.org API, since a change there is what would break this tool.
+
+To release, push a `vX.Y.Z` tag on `main`. The Release workflow builds the archives and
+images with GoReleaser, attests them, publishes the release with its Homebrew formula
+(which [phongndo/homebrew-tap](https://github.com/phongndo/homebrew-tap) picks up), and
+lists the version in the MCP Registry. CI runs the same build as a dry run on every push.
 
 ## License
 
