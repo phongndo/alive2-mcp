@@ -59,7 +59,13 @@ jobs:
           ruby -c dist/alive2-mcp.rb
       - name: Run a built image
         run: |
-          image=$(docker images ghcr.io/phongndo/alive2-mcp --format '{{.Repository}}:{{.Tag}}' | head -1)
+          # The snapshot loads one image per platform; run the runner's own.
+          image=
+          for candidate in $(docker images ghcr.io/phongndo/alive2-mcp --format '{{.Repository}}:{{.Tag}}'); do
+            if [[ $(docker image inspect "$candidate" --format '{{.Architecture}}') == amd64 ]]; then
+              image=$candidate
+            fi
+          done
           test -n "$image"
           docker run --rm "$image" -version
           docker inspect "$image" --format '{{index .Config.Labels "io.modelcontextprotocol.server.name"}}' |
